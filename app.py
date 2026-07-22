@@ -1,4 +1,5 @@
 import os
+import signal
 
 from flask import Flask, Response, abort, jsonify, redirect, render_template, send_file, url_for
 
@@ -46,6 +47,10 @@ def mjpeg_stream():
         )
 
 
+def stop_server(_signum, _frame):
+    raise KeyboardInterrupt
+
+
 @app.get("/")
 def index():
     status = project_status()
@@ -58,7 +63,10 @@ def index():
 
 @app.post("/capture")
 def capture():
-    capture_still()
+    try:
+        capture_still()
+    except Exception:
+        abort(503)
     return redirect(url_for("index"))
 
 
@@ -84,7 +92,12 @@ def stream():
 
 
 if __name__ == "__main__":
-    start_preview()
+    signal.signal(signal.SIGTERM, stop_server)
+    try:
+        start_preview()
+    except Exception as e:
+        print(f"Camera unavailable: {e}")
+        raise SystemExit(1)
     try:
         app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
     finally:

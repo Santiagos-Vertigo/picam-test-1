@@ -54,14 +54,14 @@ Open this URL from another device on the same network:
 http://192.168.1.97:5000
 ```
 
-The page shows camera and storage status, a Capture button, the latest full-resolution image, and a 1280x720 live preview at approximately 12 FPS. It has no authentication and is intended only for a trusted local network.
+The dark monitor page shows camera and storage status, a responsive 1280x720 live preview at approximately 12 FPS, and one Capture button. Captured full-resolution JPEGs are saved under `storage/images` but are not displayed on the home page. The interface has no authentication and is intended only for a trusted local network.
 
 ### Adjust focus
 
 1. Start the server and open the browser URL.
-2. Watch the live focus preview.
+2. Keep the full preview frame visible while resizing or positioning the browser.
 3. Turn the physical lens focus ring slowly until the subject is sharp.
-4. Press Capture to save a full-resolution JPEG and review it under Latest image.
+4. Press Capture to save a full-resolution JPEG under `storage/images`.
 5. Stop the server with Ctrl+C when finished.
 
 Routes:

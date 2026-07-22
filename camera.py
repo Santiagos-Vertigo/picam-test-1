@@ -48,6 +48,8 @@ def camera_available():
 
 def start_preview():
     global _server_camera
+    if _server_camera is not None:
+        return
 
     camera = Picamera2()
     try:
@@ -86,7 +88,8 @@ def preview_frames():
     while True:
         with _stream_output.condition:
             _stream_output.condition.wait()
-            yield _stream_output.frame
+            frame = _stream_output.frame
+        yield frame
 
 
 def capture_still():
