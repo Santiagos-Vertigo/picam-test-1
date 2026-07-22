@@ -11,6 +11,13 @@
   <p>Camera: <strong>{{ status.camera }}</strong></p>
   <p>Storage: <strong>{{ status.storage }}</strong></p>
 
+  <h2>Live focus preview</h2>
+  <img
+    src="{{ url_for('stream') }}"
+    alt="Live camera preview"
+    style="max-width: 100%; height: auto;"
+  >
+
   <form method="post" action="{{ url_for('capture') }}">
     <button type="submit">Capture</button>
   </form>

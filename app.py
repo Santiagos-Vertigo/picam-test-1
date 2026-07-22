@@ -1,11 +1,18 @@
 import os
 
-from flask import Flask, abort, jsonify, redirect, render_template, send_file, url_for
+from flask import Flask, Response, abort, jsonify, redirect, render_template, send_file, url_for
 
-from camera import STORAGE_DIR, camera_available, capture_images
+from camera import (
+    STORAGE_DIR,
+    camera_available,
+    capture_still,
+    preview_frames,
+    start_preview,
+    stop_preview,
+)
 
 
-VERSION = "0.3"
+VERSION = "0.4"
 app = Flask(__name__, static_folder=None)
 
 
@@ -29,6 +36,16 @@ def project_status():
     }
 
 
+def mjpeg_stream():
+    for frame in preview_frames():
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n"
+            + frame
+            + b"\r\n"
+        )
+
+
 @app.get("/")
 def index():
     status = project_status()
@@ -41,7 +58,7 @@ def index():
 
 @app.post("/capture")
 def capture():
-    capture_images()
+    capture_still()
     return redirect(url_for("index"))
 
 
@@ -58,5 +75,17 @@ def status():
     return jsonify(project_status())
 
 
+@app.get("/stream")
+def stream():
+    return Response(
+        mjpeg_stream(),
+        mimetype="multipart/x-mixed-replace; boundary=frame",
+    )
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False, threaded=False)
+    start_preview()
+    try:
+        app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+    finally:
+        stop_preview()

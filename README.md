@@ -1,6 +1,6 @@
 # picam-test-1
 
-A minimal Raspberry Pi camera tool with a command-line capture utility and a four-route browser remote.
+A minimal Raspberry Pi camera tool with command-line capture and a browser remote with live focus preview.
 
 ## Requirements
 
@@ -54,14 +54,23 @@ Open this URL from another device on the same network:
 http://192.168.1.97:5000
 ```
 
-The page shows camera and storage status, a Capture button, and the latest image. It has no authentication and is intended only for a trusted local network.
+The page shows camera and storage status, a Capture button, the latest full-resolution image, and a 1280x720 live preview at approximately 12 FPS. It has no authentication and is intended only for a trusted local network.
+
+### Adjust focus
+
+1. Start the server and open the browser URL.
+2. Watch the live focus preview.
+3. Turn the physical lens focus ring slowly until the subject is sharp.
+4. Press Capture to save a full-resolution JPEG and review it under Latest image.
+5. Stop the server with Ctrl+C when finished.
 
 Routes:
 
 - `GET /` - browser remote
-- `POST /capture` - capture one image and redirect to the home page
-- `GET /latest` - newest JPEG
+- `POST /capture` - capture one full-resolution image
+- `GET /latest` - newest full-resolution JPEG
 - `GET /status` - JSON status
+- `GET /stream` - 1280x720 MJPEG focus preview
 
 Example endpoint requests:
 
@@ -73,4 +82,4 @@ curl http://192.168.1.97:5000/latest --output latest.jpg
 
 ## Scope
 
-Version 0.3 provides still-image capture through the CLI and browser remote. It does not include video, timelapse, streaming, cloud upload, or AI features.
+Version 0.4 provides still-image capture and live MJPEG focus preview. It does not include video recording, timelapse, cloud upload, AI, authentication, or a database.
