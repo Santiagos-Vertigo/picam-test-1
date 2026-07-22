@@ -1,7 +1,7 @@
 import io
 from datetime import datetime
 from pathlib import Path
-from threading import Condition
+from threading import Condition, Lock
 from time import sleep
 
 from picamera2 import Picamera2
@@ -13,6 +13,14 @@ PROJECT_DIR = Path(__file__).resolve().parent
 STORAGE_DIR = PROJECT_DIR / "storage" / "images"
 PREVIEW_SIZE = (1280, 720)
 PREVIEW_FPS = 12
+
+SETTINGS_CONTROLS = {
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "sharpness": "Sharpness",
+    "exposure_compensation": "ExposureValue",
+}
 
 
 class StreamingOutput(io.BufferedIOBase):
@@ -28,6 +36,8 @@ class StreamingOutput(io.BufferedIOBase):
 
 _stream_output = StreamingOutput()
 _server_camera = None
+_settings_lock = Lock()
+_current_values = {}
 
 
 def _capture_file(camera, output_dir):
@@ -71,6 +81,11 @@ def start_preview():
 
     _server_camera = camera
 
+    controls = camera.camera_controls
+    for api_name, hw_name in SETTINGS_CONTROLS.items():
+        _mn, _mx, default = controls[hw_name]
+        _current_values[api_name] = float(default)
+
 
 def stop_preview():
     global _server_camera
@@ -78,6 +93,7 @@ def stop_preview():
     camera = _server_camera
     _server_camera = None
     if camera is not None:
+        _current_values.clear()
         try:
             camera.stop_recording()
         finally:
@@ -96,6 +112,49 @@ def capture_still():
     if _server_camera is None:
         raise RuntimeError("camera preview is not running")
     return _capture_file(_server_camera, STORAGE_DIR)
+
+
+def get_settings():
+    if _server_camera is None:
+        raise RuntimeError("camera preview is not running")
+
+    with _settings_lock:
+        controls = _server_camera.camera_controls
+        settings = {}
+        for api_name, hw_name in SETTINGS_CONTROLS.items():
+            mn, mx, default = controls[hw_name]
+            settings[api_name] = {
+                "value": round(_current_values[api_name], 4),
+                "min": round(float(mn), 4),
+                "max": round(float(mx), 4),
+                "default": round(float(default), 4),
+            }
+    return settings
+
+
+def apply_settings(updates):
+    if _server_camera is None:
+        raise RuntimeError("camera preview is not running")
+
+    with _settings_lock:
+        controls = _server_camera.camera_controls
+        hw_controls = {}
+
+        for api_name, value in updates.items():
+            hw_name = SETTINGS_CONTROLS[api_name]
+            mn, mx, _default = controls[hw_name]
+            if not isinstance(value, (int, float)):
+                raise ValueError(f"{api_name}: expected a number")
+            if value < mn or value > mx:
+                raise ValueError(f"{api_name}: {value} is outside range [{mn}, {mx}]")
+            hw_controls[hw_name] = float(value)
+
+        _server_camera.set_controls(hw_controls)
+
+        for api_name, value in updates.items():
+            _current_values[api_name] = float(value)
+
+    return get_settings()
 
 
 def capture_images(count=1, delay=2, output_dir=STORAGE_DIR):

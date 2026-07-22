@@ -71,6 +71,8 @@ Routes:
 - `GET /latest` - newest full-resolution JPEG
 - `GET /status` - JSON status
 - `GET /stream` - 1280x720 MJPEG focus preview
+- `GET /settings` - current camera settings with supported ranges
+- `POST /settings` - update camera settings (JSON, partial updates allowed)
 
 Example endpoint requests:
 
@@ -78,8 +80,12 @@ Example endpoint requests:
 curl http://192.168.1.97:5000/status
 curl -X POST http://192.168.1.97:5000/capture
 curl http://192.168.1.97:5000/latest --output latest.jpg
+curl http://192.168.1.97:5000/settings
+curl -X POST -H Content-Type: application/json   -d '{brightness: 0.3, contrast: 2.0}'   http://192.168.1.97:5000/settings
 ```
+
+Supported settings: `brightness`, `contrast`, `saturation`, `sharpness`, `exposure_compensation`. GET /settings returns each with its current value, min, max, and default. POST /settings accepts partial updates and validates against hardware ranges.
 
 ## Scope
 
-Version 0.4 provides still-image capture and live MJPEG focus preview. It does not include video recording, timelapse, cloud upload, AI, authentication, or a database.
+Version 0.5 provides still-image capture, live MJPEG focus preview, and runtime camera settings. It does not include video recording, timelapse, cloud upload, AI, authentication, or a database.
