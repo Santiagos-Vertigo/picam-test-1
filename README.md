@@ -56,6 +56,15 @@ http://192.168.1.97:5000
 
 The dark monitor page shows camera and storage status, a responsive 1280x720 live preview at approximately 12 FPS, and one Capture button. Captured full-resolution JPEGs are saved under `storage/images` but are not displayed on the home page. The interface has no authentication and is intended only for a trusted local network.
 
+### Preview controls
+
+- **Pause** disconnects the browser from the MJPEG stream.
+- **Resume** starts a new connection to the stream.
+- **Reload** replaces the current stream connection without reloading the page.
+- **Fullscreen** opens the 16:9 preview container with the browser Fullscreen API. Press Escape or use Exit fullscreen to return.
+
+The state label reports Live, Paused, or Reconnecting. These controls affect only the local browser and do not stop or reconfigure the Raspberry Pi camera.
+
 ### Adjust focus
 
 1. Start the server and open the browser URL.
