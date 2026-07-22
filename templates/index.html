@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>picam-test-1</title>
+</head>
+<body>
+  <h1>picam-test-1</h1>
+
+  <p>Camera: <strong>{{ status.camera }}</strong></p>
+  <p>Storage: <strong>{{ status.storage }}</strong></p>
+
+  <form method="post" action="{{ url_for('capture') }}">
+    <button type="submit">Capture</button>
+  </form>
+
+  <h2>Latest image</h2>
+  {% if has_latest %}
+    <img
+      src="{{ url_for('latest') }}?image={{ status.latest_image }}"
+      alt="Latest camera capture"
+      style="max-width: 100%; height: auto;"
+    >
+  {% else %}
+    <p>No image captured yet.</p>
+  {% endif %}
+</body>
+</html>
